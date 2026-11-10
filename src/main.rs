@@ -1,7 +1,6 @@
+use clap::Parser;
 use std::io::ErrorKind;
 use std::sync::Arc;
-
-use clap::Parser;
 use tokio::net::TcpListener;
 use tracing::info;
 
@@ -31,6 +30,16 @@ async fn main() -> std::io::Result<()> {
     let args = args::Args::parse();
 
     let config = config::load_config(&args.config_path)?;
+
+    #[cfg(feature = "metrics")]
+    init_metrics_exporter(config.metrics.unwrap_or_default().port);
+    #[cfg(not(feature = "metrics"))]
+    if config.metrics.is_some() {
+        tracing::warn!(
+            "config has a [metrics] section, but `metrics` feature is disabled; ignoring it"
+        );
+    }
+
     let root_squash = !args.no_root_squash;
     let fs = Arc::new(fs::MirrorFS::new(config.export_root.clone(), root_squash));
 
@@ -64,4 +73,28 @@ async fn main() -> std::io::Result<()> {
 
     let nlm_service = Arc::new(NlmService::new());
     handle_forever(listener, context, mount_service, nlm_service).await
+}
+
+#[cfg(feature = "metrics")]
+fn init_metrics_exporter(port: u16) {
+    use metrics_exporter_prometheus::NativeHistogramConfig;
+    metrics_exporter_prometheus::PrometheusBuilder::new()
+        .set_native_histogram_for_metric(
+            metrics_exporter_prometheus::Matcher::Prefix("nfsmamont_".to_string()),
+            {
+                let bucket_factor = 2.0;
+                let max_buckets = 32;
+                let zero_threshold = 0.0;
+                NativeHistogramConfig::new(bucket_factor, max_buckets, zero_threshold).unwrap()
+            },
+        )
+        .with_http_listener(([0, 0, 0, 0], port))
+        .install()
+        .expect("failed to install Prometheus recorder");
+
+    tokio::spawn(
+        tokio_metrics::RuntimeMetricsReporterBuilder::default()
+            .with_interval(std::time::Duration::from_secs(1))
+            .describe_and_run(),
+    );
 }

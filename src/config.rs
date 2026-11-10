@@ -7,6 +7,7 @@ const DEFAULT_VFS_POOL_SIZE: usize = 10;
 const MAX_EXPORTS_COUNT: usize = 256;
 const DEFAULT_BUFFER_SIZE: usize = 64 * 1024;
 const DEFAULT_BUFFER_COUNT: usize = 2048;
+const DEFAULT_METRICS_PORT: u16 = 2077;
 
 #[derive(Debug)]
 pub struct Config {
@@ -14,12 +15,19 @@ pub struct Config {
     pub vfs_pool_size: NonZeroUsize,
     pub export_root: PathBuf,
     pub exports: Vec<ExportConfig>,
+    /// `None` when the config has no `[metrics]` section.
+    pub metrics: Option<MetricsConfig>,
 }
 
 #[derive(Debug)]
 pub struct AllocatorConfig {
     pub buffer_size: NonZeroUsize,
     pub buffer_count: NonZeroUsize,
+}
+
+#[derive(Debug)]
+pub struct MetricsConfig {
+    pub port: u16,
 }
 
 #[derive(Debug)]
@@ -35,6 +43,7 @@ impl Default for Config {
             vfs_pool_size: NonZeroUsize::new(DEFAULT_VFS_POOL_SIZE).unwrap(),
             export_root: PathBuf::new(),
             exports: Vec::with_capacity(MAX_EXPORTS_COUNT),
+            metrics: None,
         }
     }
 }
@@ -45,6 +54,12 @@ impl Default for AllocatorConfig {
             buffer_size: NonZeroUsize::new(DEFAULT_BUFFER_SIZE).unwrap(),
             buffer_count: NonZeroUsize::new(DEFAULT_BUFFER_COUNT).unwrap(),
         }
+    }
+}
+
+impl Default for MetricsConfig {
+    fn default() -> Self {
+        Self { port: DEFAULT_METRICS_PORT }
     }
 }
 
@@ -99,7 +114,11 @@ pub fn load_config(path: &Path) -> std::io::Result<Config> {
 
     validate_exports(&exports)?;
 
-    Ok(Config { allocator, vfs_pool_size, export_root: root, exports })
+    let metrics = raw_config.metrics.map(|raw_metrics| MetricsConfig {
+        port: raw_metrics.port.unwrap_or(DEFAULT_METRICS_PORT),
+    });
+
+    Ok(Config { allocator, vfs_pool_size, export_root: root, exports, metrics })
 }
 
 // Unknown keys are rejected so that a config written for an older layout
@@ -111,6 +130,7 @@ struct RawConfig {
     allocator: Option<RawAllocatorConfig>,
     vfs_pool_size: Option<usize>,
     exports: Option<RawExportsConfig>,
+    metrics: Option<RawMetricsConfig>,
 }
 
 #[derive(Deserialize)]
@@ -118,6 +138,12 @@ struct RawConfig {
 struct RawAllocatorConfig {
     buffer_size: Option<usize>,
     buffer_count: Option<usize>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawMetricsConfig {
+    port: Option<u16>,
 }
 
 #[derive(Deserialize)]

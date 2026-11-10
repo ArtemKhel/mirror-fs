@@ -12,9 +12,9 @@ publish = false
 # External dependencies
 tokio = { version = "1.52", features = ["full", "time"] }
 byteorder = "1.5.0"
-nfs-mamont = "0.4.0"
-nfs-mamont-util = "0.4.0"
-num-derive = "0.4.2"
+# nfs-mamont = "0.4.0"
+# nfs-mamont-util = "0.4.0"
+num-derive = "0.5.1"
 num-traits = "0.2.19"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
@@ -23,9 +23,28 @@ crossbeam-queue = "0.3.12"
 trait-variant = "0.1.2"
 clap = { version = "4.5.61", features = ["derive"] }
 serde = { version = "1.0.228", features = ["derive"] }
-toml = "0.8.19"
+toml = "1.2.1"
 libc = "0.2"
+metrics-exporter-prometheus = { version = "0.18.3", features = [
+    "protobuf",
+], optional = true }
+tokio-metrics = { version = "0.5.2", features = [
+    "metrics-rs-integration",
+], optional = true }
 
-# Gihub dependencies
+nfs-mamont = { path = "../nfs-mamont/nfs-mamont/", features = ["metrics"] }
+nfs-mamont-util = { path = "../nfs-mamont/nfs-mamont-util/", features = [
+    "metrics",
+] }
+
+[features]
+default = []
+metrics = [
+    "nfs-mamont/metrics",
+    "nfs-mamont-util/metrics",
+    "dep:metrics-exporter-prometheus",
+    "dep:tokio-metrics",
+]
+
 [dev-dependencies]
 tempfile = "3.27.0"

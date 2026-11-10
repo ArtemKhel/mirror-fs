@@ -24,6 +24,8 @@ cargo build --release
 The server binary is `target/release/mirrorfs`. The only external dependency
 is `nfs-mamont`, fetched from GitHub at a pinned revision.
 
+Build with `--features metrics` to collect metrics from `nfs-mamont` and serve them to Prometheus on the port set in `[metrics]` section of config.
+
 Run the test suite:
 
 ```sh
@@ -61,6 +63,9 @@ vfs_pool_size = 10        # VFS task pool size (perf tunable)
 [exports]
 root  = "/tmp/nfs"        # base directory that gets mirrored
 paths = ["fs01", "fs02"]  # relative directories under `root` to export
+
+[metrics]                 # only used when built with `--features metrics`
+port = 2077               # Prometheus exporter port [default: 2077]
 ```
 
 ## Mounting from a client
