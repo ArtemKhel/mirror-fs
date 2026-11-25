@@ -1,0 +1,53 @@
+name: pjdfstest
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  posix:
+    name: POSIX conformance (pjdfstest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+
+      - name: Install system packages
+        run: sudo apt-get update && sudo apt-get install -y nfs-common autoconf automake
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.95.0"
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - name: Build server
+        run: cargo build --locked
+
+      - name: Build pjdfstest
+        run: posix-tests/build.sh
+
+      - name: Run pjdfstest
+        run: posix-tests/run.sh
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pjdfstest-logs
+          path: |
+            /tmp/pjdfstest/log.txt
+            /tmp/pjdfstest/server.log
+          retention-days: 7
