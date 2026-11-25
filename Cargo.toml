@@ -10,22 +10,24 @@ publish = false
 
 [dependencies]
 # External dependencies
-tokio = { version = "1.52", features = ["full", "time"] }
+tokio = { version = "1.54.1", features = ["full", "time"] }
 byteorder = "1.5.0"
-nfs-mamont = "0.4.0"
-nfs-mamont-util = "0.4.0"
-num-derive = "0.4.2"
+# nfs-mamont = "0.4.0"
+# nfs-mamont-util = "0.4.0"
+num-derive = "0.5.1"
 num-traits = "0.2.19"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
 async-channel = "2.5.0"
-crossbeam-queue = "0.3.12"
+crossbeam-queue = "0.3.14"
 trait-variant = "0.1.2"
-clap = { version = "4.5.61", features = ["derive"] }
+clap = { version = "4.6.10", features = ["derive"] }
 serde = { version = "1.0.228", features = ["derive"] }
-toml = "0.8.19"
+toml = "1.2.3"
 libc = "0.2"
 
-# Gihub dependencies
+nfs-mamont-util = { path = "../nfs-mamont/nfs-mamont-util/" }
+nfs-mamont = { path = "../nfs-mamont/nfs-mamont/" }
+
 [dev-dependencies]
 tempfile = "3.27.0"
