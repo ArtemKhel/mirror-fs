@@ -32,10 +32,8 @@ tokio-metrics = { version = "0.5.2", features = [
     "metrics-rs-integration",
 ], optional = true }
 
-nfs-mamont = { path = "../nfs-mamont/nfs-mamont/", features = ["metrics"] }
-nfs-mamont-util = { path = "../nfs-mamont/nfs-mamont-util/", features = [
-    "metrics",
-] }
+nfs-mamont-util = { path = "../nfs-mamont/nfs-mamont-util/" }
+nfs-mamont = { path = "../nfs-mamont/nfs-mamont/" }
 
 [features]
 default = []

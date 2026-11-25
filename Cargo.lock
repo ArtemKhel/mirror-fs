@@ -870,11 +870,9 @@ dependencies = [
  "async-channel",
  "byteorder",
  "drr-channel",
- "metrics",
  "num-derive 0.4.2",
  "num-traits",
  "tokio",
- "tokio-metrics",
  "tracing",
  "trait-variant",
 ]
@@ -884,7 +882,6 @@ name = "nfs-mamont-util"
 version = "0.4.0"
 dependencies = [
  "crossbeam-queue",
- "metrics",
  "nfs-mamont",
  "tokio",
  "tracing",
