@@ -30,6 +30,16 @@ Run the test suite:
 cargo test
 ```
 
+POSIX conformance tests ([pjdfstest](https://github.com/pjd/pjdfstest)) run
+through a local NFS mount and need `sudo`, `autoconf`, `automake` and
+`mount.nfs`. Failures listed in `posix-tests/known-failures.txt` are ignored:
+
+```sh
+git submodule update --init
+posix-tests/build.sh
+posix-tests/run.sh [--update] [chmod rename/09.t ...]
+```
+
 ## Usage
 
 ```
