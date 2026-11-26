@@ -163,7 +163,6 @@ jobs:
           for u in fsgqa fsgqa2 123456-fsgqa; do
             sudo useradd -m -U "$u";
           done;
-          sudo groupadd fsgqa
 
       - uses: actions/download-artifact@v7
         with:
