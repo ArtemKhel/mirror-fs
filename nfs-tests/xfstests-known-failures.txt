@@ -1,7 +1,7 @@
 # xfstests known to fail on mirror-fs.
 # Regenerate with `nfs-tests/xfstests.sh --update [check args]`.
 generic/035
-generic/075
+generic/128
 generic/452
 generic/471
 generic/736
