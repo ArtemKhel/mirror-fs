@@ -17,3 +17,7 @@ cthon-build:
 # Run cthon04 against mirror-fs over NFS (needs sudo). Args go to cthon.py.
 cthon *args:
     nfs-tests/cthon.sh {{ args }}
+
+# Run xfstests against mirror-fs over NFS (needs sudo). Args go to xfstests.py / check.
+xfstests *args:
+    nfs-tests/xfstests.sh {{ args }}

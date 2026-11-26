@@ -55,6 +55,14 @@ git submodule update --init
   nfs-tests/cthon.sh [--update] [basic special/holey ...]
   ```
 
+- [xfstests](https://git.kernel.org/pub/scm/fs/xfs/xfstests-dev.git), the kernel's
+  file system regression suite, from nixpkgs (`xfstests-check` on PATH). Serves
+  separate test and scratch exports; extra args go to `check` (default `-g quick`).
+
+  ```sh
+  nfs-tests/xfstests.sh [--update] [-g quick | generic/001 ...]
+  ```
+
 ## Usage
 
 ```

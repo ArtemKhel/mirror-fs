@@ -7,5 +7,6 @@ cd "$(dirname "$0")/.."
 . nfs-tests/lib.sh
 
 root=${CTHON_ROOT:-/tmp/cthon}
-serve_and_mount $root ""
+serve $root export
+mount_export export ""
 python3 nfs-tests/cthon.py --mount $root/mnt --log $root/log.txt "$@"
