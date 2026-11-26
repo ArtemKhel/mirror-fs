@@ -102,11 +102,12 @@ def main():
         print(f"updated {args.known}")
         return
     if fixed := sorted(known & ran - failed):
-        print(f"\nnow passing ({len(fixed)}), consider removing from {args.known.name}:")
+        print(f"\nNOW PASSING ({len(fixed)}), remove from {args.known.name}:")
         print("\n".join(f"  {f}" for f in fixed))
     if new := sorted(failed - known):
         print(f"\nNEW FAILURES ({len(new)}):")
         print("\n".join(f"  {n}" for n in new))
+    if fixed or new:
         sys.exit(1)
 
 

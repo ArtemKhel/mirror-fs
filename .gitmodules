@@ -6,3 +6,8 @@
 	path = nfs-tests/cthon04
 	url = https://github.com/linux-nfs/cthon04
 	ignore = untracked
+[submodule "nfs-tests/xfstests"]
+	path = nfs-tests/xfstests
+	url = https://git.kernel.org/pub/scm/fs/xfs/xfstests-dev.git
+	shallow = true
+	ignore = untracked

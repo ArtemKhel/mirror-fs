@@ -3,7 +3,8 @@
 #   exported as /<export>. Sets $nfs_opts to the matching mount options.
 # mount_export <export> <extra mount options>: mount /<export> at <work dir>/mnt.
 # On exit, everything mounted under <work dir> is unmounted and the server stopped.
-# Override NFS_TESTS_PORT to change the server port, RUST_LOG for server.log.
+# Override NFS_TESTS_PORT to change the server port, RUST_LOG for server.log,
+# MIRROR_FS_BIN to use a prebuilt server instead of `cargo build`.
 
 serve() {
     root=$1
@@ -17,7 +18,11 @@ serve() {
     keepalive=$!
     trap cleanup EXIT
 
-    cargo build
+    local bin=${MIRROR_FS_BIN:-}
+    if [ -z "$bin" ]; then
+        cargo build
+        bin=target/debug/mirror-fs
+    fi
     local paths=()
     for export in "$@"; do
         sudo rm -rf $root/$export && mkdir -p $root/$export
@@ -29,7 +34,7 @@ root = "$root"
 paths = [$(IFS=,; echo "${paths[*]}")]
 EOF
 
-    sudo env RUST_LOG=${RUST_LOG:-info} target/debug/mirror-fs -c $root/config.toml \
+    sudo env RUST_LOG=${RUST_LOG:-info} $bin -c $root/config.toml \
         -a 127.0.0.1:$port --no-root-squash >$root/server.log 2>&1 &
     server=$!
     for _ in $(seq 50); do

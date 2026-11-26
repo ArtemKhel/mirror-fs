@@ -8,6 +8,7 @@ Expects FSTYP, TEST_DEV, TEST_DIR, SCRATCH_DEV, SCRATCH_MNT in the environment.
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -18,8 +19,8 @@ HERE = Path(__file__).resolve().parent
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("--check", required=True, help="xfstests-check binary")
-    parser.add_argument("--workdir", required=True, type=Path, help="results go to <workdir>/results")
+    parser.add_argument("--xfstests", required=True, type=Path, help="built, writable xfstests tree")
+    parser.add_argument("--results", required=True, type=Path, help="results dir, wiped first")
     parser.add_argument("--known", type=Path, default=HERE / "xfstests-known-failures.txt")
     parser.add_argument("--update", action="store_true", help="rewrite known failures")
     args, check_args = parser.parse_known_args()
@@ -27,10 +28,11 @@ def main():
     if os.geteuid() != 0:
         sys.exit("xfstests must run as root")
 
-    # xfstests-check puts results in $PWD/results; -R xunit adds result.xml there.
-    results = args.workdir / "results"
-    subprocess.run(["rm", "-rf", results], check=True)
-    subprocess.run([args.check, "-R", "xunit", *(check_args or ["-g", "quick"])], cwd=args.workdir)
+    # -R xunit adds result.xml to the results.
+    results = args.results
+    shutil.rmtree(results, ignore_errors=True)
+    env = dict(os.environ, RESULT_BASE=str(results))
+    subprocess.run(["./check", "-R", "xunit", *(check_args or ["-g", "quick"])], cwd=args.xfstests, env=env)
 
     reports = list(results.rglob("result.xml"))
     if not reports:
@@ -58,11 +60,12 @@ def main():
         print(f"updated {args.known}")
         return
     if fixed := sorted(known & ran - failed):
-        print(f"\nnow passing ({len(fixed)}), consider removing from {args.known.name}:")
+        print(f"\nNOW PASSING ({len(fixed)}), remove from {args.known.name}:")
         print("\n".join(f"  {f}" for f in fixed))
     if new := sorted(failed - known):
         print(f"\nNEW FAILURES ({len(new)}):")
         print("\n".join(f"  {n}" for n in new))
+    if fixed or new:
         sys.exit(1)
 
 

@@ -1,0 +1,184 @@
+name: NFS tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # Prebuilt server from the build job, picked up by nfs-tests/lib.sh.
+  MIRROR_FS_BIN: ${{ github.workspace }}/bin/mirror-fs
+
+# Each suite fails on a failure missing from its nfs-tests/*-known-failures.txt
+# and on a listed failure that now passes. Known lists depend on the runner's
+# kernel, so the image is pinned.
+jobs:
+  build:
+    name: Build server
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.95.0"
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - name: Build server
+        run: cargo build --locked
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: mirror-fs
+          path: target/debug/mirror-fs
+          retention-days: 1
+
+  pjdfstest:
+    name: POSIX conformance (pjdfstest)
+    needs: [build]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Fetch suite
+        run: git submodule update --init --depth 1 nfs-tests/pjdfstest
+
+      - name: Install system packages
+        run: sudo apt-get update && sudo apt-get install -y nfs-common autoconf automake
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: mirror-fs
+          path: bin
+
+      - name: Build pjdfstest
+        run: chmod +x bin/mirror-fs && nfs-tests/pjdfstest-build.sh
+
+      - name: Run pjdfstest
+        run: nfs-tests/pjdfstest.sh
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pjdfstest-logs
+          path: |
+            /tmp/pjdfstest/log.txt
+            /tmp/pjdfstest/server.log
+          retention-days: 7
+
+  cthon:
+    name: Connectathon (cthon04)
+    needs: [build]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Fetch suite
+        run: git submodule update --init --depth 1 nfs-tests/cthon04
+
+      # nfs-common pulls in rpcbind and rpc.statd, needed by the NLM lock tests.
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nfs-common libtirpc-dev pkg-config groff-base time
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: mirror-fs
+          path: bin
+
+      - name: Build cthon04
+        run: chmod +x bin/mirror-fs && nfs-tests/cthon-build.sh
+
+      - name: Run cthon04
+        run: nfs-tests/cthon.sh
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cthon-logs
+          path: |
+            /tmp/cthon/log.txt
+            /tmp/cthon/server.log
+          retention-days: 7
+
+  xfstests:
+    name: xfstests
+    needs: [build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60 # ~13min for a pass on my machine
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Fetch suite
+        id: suite
+        run: |
+          git submodule update --init --depth 1 nfs-tests/xfstests
+          echo "sha=$(git rev-parse HEAD:nfs-tests/xfstests)" >> "$GITHUB_OUTPUT"
+
+      # Build and runtime dependencies from nfs-tests/xfstests/README, plus
+      # xfslibs-dev (headers), acct (accton) and nfs-common.
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y acl attr automake bc dbench dump e2fsprogs fio gawk \
+            gcc indent libacl1-dev libaio-dev libcap-dev libgdbm-dev libtool \
+            libtool-bin liburing-dev libuuid1 lvm2 make psmisc python3 quota sed \
+            uuid-dev uuid-runtime xfsprogs "linux-headers-$(uname -r)" sqlite3 \
+            libgdbm-compat-dev xfslibs-dev acct nfs-common
+
+      # The built tree is reused until the pinned commit or the runner image changes.
+      # Saved right after the build, so a failing test run still caches it.
+      - name: Restore xfstests build
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: nfs-tests/xfstests
+          key: xfstests-${{ env.ImageOS }}-${{ env.ImageVersion }}-${{ steps.suite.outputs.sha }}
+
+      - name: Build xfstests
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: nfs-tests/xfstests-build.sh
+
+      - name: Save xfstests build
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: nfs-tests/xfstests
+          key: ${{ steps.cache.outputs.cache-primary-key }}
+
+      - name: Create test users
+        run: |
+          for u in fsgqa fsgqa2 123456-fsgqa; do
+            sudo useradd -m -U "$u";
+          done;
+          sudo groupadd fsgqa
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: mirror-fs
+          path: bin
+
+      - name: Run xfstests
+        run: chmod +x bin/mirror-fs && nfs-tests/xfstests.sh
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xfstests-logs
+          path: |
+            /tmp/xfstests/results
+            /tmp/xfstests/server.log
+          retention-days: 7
