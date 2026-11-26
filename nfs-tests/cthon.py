@@ -57,13 +57,16 @@ def run_unit(name, argv, mount, log):
             check=False,
             cwd=workdir,
             env=env,
+            # No tty: testdir()'s `rm -r` would prompt on write-protected dirs and hang.
+            stdin=subprocess.DEVNULL,
             capture_output=True,
             text=True,
             timeout=TIMEOUT,
         )
         out, ok = proc.stdout + proc.stderr, proc.returncode == 0
-    except subprocess.TimeoutExpired:
-        out, ok = "timed out\n", False
+    except subprocess.TimeoutExpired as error:
+        partial = (error.stdout or b"") + (error.stderr or b"")
+        out, ok = partial.decode(errors="replace") + "timed out\n", False
     log.write(f"### {name}\n{out}\n")
     return ok
 
