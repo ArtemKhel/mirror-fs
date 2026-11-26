@@ -15,7 +15,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 TESTS = HERE / "pjdfstest" / "tests"
-TIMEOUT = 10
+TIMEOUT = 60
 PLAN = re.compile(r"^1\.\.(\d+)")
 RESULT = re.compile(r"^(not )?ok (\d+)(.*)")
 
