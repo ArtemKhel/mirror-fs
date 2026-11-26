@@ -147,7 +147,7 @@ def main():
         print(f"\nNOW PASSING ({len(fixed)}), remove from {args.known.name}:")
         print("\n".join(f"  {f}" for f in fixed))
     if new:
-        print(f"\nNEW FAILURES ({len(new)}):")
+        print(f"\nNEW FAILURES ({len(new)}), add to {args.known.name}:")
         print("\n".join(f"  {n}" for n in new))
     if fixed or new:
         sys.exit(1)
