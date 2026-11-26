@@ -30,6 +30,41 @@ Run the test suite:
 cargo test
 ```
 
+NFS client tests run through a local NFS mount against a scratch export and
+need `sudo` and `mount.nfs`. Failures listed in `nfs-tests/*-known-failures.txt`
+are ignored; pass `--update` to regenerate the list, or suite paths to filter.
+To apply a run's report (e.g. a CI log) instead, use
+`nfs-tests/update-known.py <known-failures file> [log, default: stdin]`.
+
+```sh
+git submodule update --init
+```
+
+- [pjdfstest](https://github.com/pjd/pjdfstest), POSIX syscall conformance.
+  Build needs `autoconf` and `automake`.
+
+  ```sh
+  nfs-tests/pjdfstest-build.sh
+  nfs-tests/pjdfstest.sh [--update] [chmod rename/09.t ...]
+  ```
+
+- [cthon04](https://github.com/linux-nfs/cthon04), Connectathon NFS tests.
+  Build needs `libtirpc` and `pkg-config`; the general suite needs `groff`.
+  Lock tests use NLM, so `rpcbind` and `rpc.statd` must be running.
+
+  ```sh
+  nfs-tests/cthon-build.sh
+  nfs-tests/cthon.sh [--update] [basic special/holey ...]
+  ```
+
+- [xfstests](https://git.kernel.org/pub/scm/fs/xfs/xfstests-dev.git), the kernel's
+  file system regression suite, from nixpkgs (`xfstests-check` on PATH). Serves
+  separate test and scratch exports; extra args go to `check` (default `-g quick`).
+
+  ```sh
+  nfs-tests/xfstests.sh [--update] [-g quick | generic/001 ...]
+  ```
+
 ## Usage
 
 ```

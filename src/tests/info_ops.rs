@@ -127,7 +127,7 @@ async fn fs_info_returns_server_limits() {
 }
 
 #[tokio::test]
-async fn fs_stat_returns_zero_counters() {
+async fn fs_stat_reports_backing_fs_usage() {
     let ctx = TestContext::new();
     let root = ctx.root_handle().await;
 
@@ -136,10 +136,12 @@ async fn fs_stat_returns_zero_counters() {
         "fs_stat should succeed",
     );
 
+    // Zero totals make `df` hide the mount as a dummy file system.
     assert!(result.root_attr.is_some());
-    assert_eq!(result.total_bytes, 0);
-    assert_eq!(result.free_bytes, 0);
-    assert_eq!(result.available_files, 0);
+    assert!(result.total_bytes > 0);
+    assert!(result.free_bytes <= result.total_bytes);
+    assert!(result.available_bytes <= result.free_bytes);
+    assert!(result.free_files <= result.total_files);
     assert_eq!(result.invarsec, 0);
 }
 
