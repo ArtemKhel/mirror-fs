@@ -33,6 +33,8 @@ cargo test
 NFS client tests run through a local NFS mount against a scratch export and
 need `sudo` and `mount.nfs`. Failures listed in `nfs-tests/*-known-failures.txt`
 are ignored; pass `--update` to regenerate the list, or suite paths to filter.
+To apply a run's report (e.g. a CI log) instead, use
+`nfs-tests/update-known.py <known-failures file> [log, default: stdin]`.
 
 ```sh
 git submodule update --init
