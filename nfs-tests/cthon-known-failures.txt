@@ -2,13 +2,7 @@
 # Regenerate with `nfs-tests/cthon.sh --update`.
 basic/test1
 basic/test2
-basic/test3
-basic/test4
-basic/test5
 basic/test6
-basic/test7
-basic/test8
-basic/test9
 general/all
 lock/tlock64
 lock/tlocklfs
