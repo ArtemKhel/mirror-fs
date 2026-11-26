@@ -5,8 +5,15 @@ run:
     cargo run --features metrics -- -c config.toml
 
 pjdfstest-build:
-    posix-tests/build.sh
+    nfs-tests/pjdfstest-build.sh
 
-# Run pjdfstest against mirror-fs over NFS (needs sudo). Args go to run.py.
+# Run pjdfstest against mirror-fs over NFS (needs sudo). Args go to pjdfstest.py.
 pjdfstest *args:
-    posix-tests/run.sh {{ args }}
+    nfs-tests/pjdfstest.sh {{ args }}
+
+cthon-build:
+    nfs-tests/cthon-build.sh
+
+# Run cthon04 against mirror-fs over NFS (needs sudo). Args go to cthon.py.
+cthon *args:
+    nfs-tests/cthon.sh {{ args }}

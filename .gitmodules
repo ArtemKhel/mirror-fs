@@ -1,4 +1,8 @@
 [submodule "posix-tests/pjdfstest"]
-	path = posix-tests/pjdfstest
+	path = nfs-tests/pjdfstest
 	url = https://github.com/pjd/pjdfstest
+	ignore = untracked
+[submodule "nfs-tests/cthon04"]
+	path = nfs-tests/cthon04
+	url = https://github.com/linux-nfs/cthon04
 	ignore = untracked

@@ -37,10 +37,10 @@ jobs:
         run: cargo build --locked
 
       - name: Build pjdfstest
-        run: posix-tests/build.sh
+        run: nfs-tests/pjdfstest-build.sh
 
       - name: Run pjdfstest
-        run: posix-tests/run.sh
+        run: nfs-tests/pjdfstest.sh
 
       - name: Upload logs
         if: failure()

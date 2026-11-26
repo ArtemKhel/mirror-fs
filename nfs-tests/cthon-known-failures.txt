@@ -1,0 +1,27 @@
+# cthon04 programs known to fail on mirror-fs.
+# Regenerate with `nfs-tests/cthon.sh --update`.
+basic/test1
+basic/test2
+basic/test3
+basic/test4
+basic/test5
+basic/test6
+basic/test7
+basic/test8
+basic/test9
+general/all
+lock/tlock64
+lock/tlocklfs
+special/bigfile
+special/bigfile2
+special/excltest
+special/holey
+special/negseek
+special/nfsidem
+special/op_chmod
+special/op_ren
+special/op_unlk
+special/rename
+special/rewind
+special/telldir
+special/truncate

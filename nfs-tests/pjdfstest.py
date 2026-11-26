@@ -71,7 +71,7 @@ def run_file(test, mount, log):
 def write_known(path, known):
     lines = [
         "# pjdfstest cases known to fail on mirror-fs.",
-        "# Regenerate with `posix-tests/run.sh --update` (optionally filtered, e.g. `chmod`).",
+        "# Regenerate with `nfs-tests/pjdfstest.sh --update` (optionally filtered, e.g. `chmod`).",
     ]
     for name in sorted(known):
         cases = known[name]
@@ -91,7 +91,7 @@ def main():
     parser.add_argument(
         "--mount", required=True, type=Path, help="directory to run tests in"
     )
-    parser.add_argument("--known", type=Path, default=HERE / "known-failures.txt")
+    parser.add_argument("--known", type=Path, default=HERE / "pjdfstest-known-failures.txt")
     parser.add_argument(
         "--log", type=Path, default=Path(os.devnull), help="full TAP output"
     )

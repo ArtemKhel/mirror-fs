@@ -1,5 +1,5 @@
 # pjdfstest cases known to fail on mirror-fs.
-# Regenerate with `posix-tests/run.sh --update` (optionally filtered, e.g. `chmod`).
+# Regenerate with `nfs-tests/pjdfstest.sh --update` (optionally filtered, e.g. `chmod`).
 chmod/00.t 6
 chmod/00.t 7
 chmod/00.t 8
